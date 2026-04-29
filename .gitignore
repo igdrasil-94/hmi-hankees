@@ -1,1 +1,37 @@
-Nothing needs to be added to .gitignore since the changes only include source code files (.ts files) and no build artifacts, dependencies, or temporary files.
+```
+# Dependencies
+node_modules/
+
+# Build artifacts
+dist/
+
+# Environment variables
+.env
+.env.local
+*.env.*
+
+# IDE and editor files
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Processed images (if any TypeScript compilation generates them)
+*.png
+*.jpg
+*.jpeg
+*.bmp
+*.gif
+*.webm
+
+```
