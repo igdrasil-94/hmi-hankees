@@ -2,8 +2,25 @@ import { Router } from 'express';
 import { authenticate, authorize } from '../middleware/auth';
 import { validateRequest } from '../middleware';
 import { audioCaptureSchema } from '../utils/validators';
+import acrcloudService from '../services/acrcloud.service';
+import multer from 'multer';
 
 const router = Router();
+
+// Configuration multer pour l'upload de fichiers audio
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB max
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('audio/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Seuls les fichiers audio sont autorisés'));
+    }
+  },
+});
 
 // Mock database
 const captures: any[] = [];
@@ -39,11 +56,20 @@ router.get('/config', authenticate, async (req, res) => {
 
 /**
  * POST /audio/capturer
- * Upload d'un extrait audio pour identification
+ * Upload d'un extrait audio pour identification via ACRCloud
  */
-router.post('/capturer', authenticate, validateRequest(audioCaptureSchema), async (req, res) => {
+router.post('/capturer', authenticate, upload.single('audio'), async (req, res) => {
   try {
-    const { etablissementId, deviceId, extraitAudio } = req.body;
+    const { etablissementId, deviceId } = req.body;
+    const audioFile = req.file;
+
+    if (!audioFile || !audioFile.buffer) {
+      res.status(400).json({
+        success: false,
+        error: 'Fichier audio requis',
+      });
+      return;
+    }
 
     // Créer la capture
     const capture: any = {
@@ -59,25 +85,43 @@ router.post('/capturer', authenticate, validateRequest(audioCaptureSchema), asyn
 
     captures.push(capture);
 
-    // Simulation du traitement asynchrone
-    setTimeout(() => {
+    // Appel à ACRCloud pour identification
+    try {
+      const metadata = await acrcloudService.identify(audioFile.buffer, audioFile.originalname);
+
       capture.statut = 'termine';
       capture.dateTraitement = new Date();
-      capture.resultat = {
-        titre: "Exemple Titre",
-        artiste: "Exemple Artiste",
-        isrc: "FRZ123456789",
-        confidence: 0.95,
-        label: "Exemple Label",
-        annee: 2024,
-      };
-    }, 3000);
 
-    res.status(202).json({
+      if (metadata) {
+        capture.resultat = {
+          titre: metadata.title,
+          artiste: metadata.artist,
+          isrc: metadata.isrc,
+          confidence: metadata.confidence,
+          label: metadata.label,
+          annee: metadata.releaseDate ? new Date(metadata.releaseDate).getFullYear() : undefined,
+          genres: metadata.genres,
+        };
+      } else {
+        capture.resultat = {
+          erreur: 'Aucune correspondance trouvée',
+          confidence: 0,
+        };
+      }
+    } catch (acrError: any) {
+      capture.statut = 'echec';
+      capture.dateTraitement = new Date();
+      capture.resultat = {
+        erreur: acrError.message,
+      };
+    }
+
+    res.status(200).json({
       success: true,
-      message: 'Capture audio en cours de traitement',
+      message: capture.resultat?.titre ? 'Musique identifiée avec succès' : 'Traitement terminé',
       captureId: capture.id,
       statut: capture.statut,
+      resultat: capture.resultat,
     });
   } catch (error: any) {
     res.status(500).json({
