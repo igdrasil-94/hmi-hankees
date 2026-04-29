@@ -2,36 +2,29 @@
 # Dependencies
 node_modules/
 
-# Build artifacts
-dist/
-
-# Environment variables
+# Environment
 .env
 .env.local
 *.env.*
 
-# IDE and editor files
+# Logs and temp files
+*.log
+*.tmp
+
+# Editors
 .vscode/
 .idea/
 
-# Logs
-*.log
-
-# Temporary files
-*.tmp
-*.swp
-*.swo
-
-# OS generated files
-.DS_Store
-Thumbs.db
-
-# Processed images (if any TypeScript compilation generates them)
-*.png
-*.jpg
-*.jpeg
-*.bmp
-*.gif
-*.webm
-
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.coverage
+coverage/
+htmlcov/
+.pytest_cache/
+.mypy_cache/
 ```
