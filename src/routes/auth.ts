@@ -137,13 +137,13 @@ router.post('/login', validateRequest(loginSchema), async (req, res) => {
     const accessToken = jwt.sign(
       { userId: user.id, email: user.email, role: user.role },
       cfg.jwt.secret,
-      { expiresIn: cfg.jwt.expiresIn } as any
+      { expiresIn: cfg.jwt.expiresIn }
     );
 
     const refreshToken = jwt.sign(
       { userId: user.id, email: user.email, role: user.role },
       cfg.jwt.secret,
-      { expiresIn: cfg.jwt.refreshExpiresIn } as any
+      { expiresIn: cfg.jwt.refreshExpiresIn }
     );
 
     // Stocker le refresh token hashé
@@ -226,13 +226,13 @@ router.post('/refresh', validateRequest(refreshTokenSchema), async (req, res) =>
     const newAccessToken = jwt.sign(
       { userId: decoded.userId, email: (decoded as any).email, role: (decoded as any).role },
       config.jwt.secret,
-      { expiresIn: config.jwt.expiresIn as string }
+      { expiresIn: config.jwt.expiresIn }
     );
 
     const newRefreshToken = jwt.sign(
       { userId: decoded.userId, email: (decoded as any).email, role: (decoded as any).role },
       config.jwt.secret,
-      { expiresIn: config.jwt.refreshExpiresIn as string }
+      { expiresIn: config.jwt.refreshExpiresIn }
     );
 
     res.json({

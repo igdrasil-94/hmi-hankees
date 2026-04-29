@@ -46,14 +46,14 @@ router.post('/capturer', authenticate, validateRequest(audioCaptureSchema), asyn
     const { etablissementId, deviceId, extraitAudio } = req.body;
 
     // Créer la capture
-    const capture = {
+    const capture: any = {
       id: require('uuid').v4(),
       etablissementId,
       deviceId,
       statut: 'en_cours',
       dateCapture: new Date(),
-      dateTraitement: null,
-      resultat: null,
+      dateTraitement: null as Date | null,
+      resultat: null as any,
       provider: 'acrcloud',
     };
 
