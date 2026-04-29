@@ -7,10 +7,8 @@ const router = Router();
  * GET /dashboard/kpis
  * Récupérer les KPIs principaux
  */
-router.get('/kpis', authenticate, async (req, res) => {
+router.get('/kpis', authenticate, authorize('admin'), async (req, res) => {
   try {
-    const role = req.user?.role;
-    
     // KPIs mockés
     const kpis = {
       totalEtablissements: 0,
@@ -45,16 +43,13 @@ router.get('/kpis', authenticate, async (req, res) => {
  */
 router.get('/carte', authenticate, async (req, res) => {
   try {
-    const region = req.query.region as string;
+    const statut = req.query.statut as string;
     const ville = req.query.ville as string;
 
     // Mock: données géographiques
     const mapData = {
       etablissements: [],
-      heatmaps: {
-        diffusions: [],
-        densite: [],
-      },
+      total: 0,
     };
 
     res.json({
@@ -78,7 +73,6 @@ router.get('/top-musiques', authenticate, async (req, res) => {
     const limit = parseInt(req.query.limit as string) || 10;
     const startDate = req.query.startDate as string;
     const endDate = req.query.endDate as string;
-    const etablissementId = req.query.etablissementId as string;
 
     // Mock: top musiques
     const topMusiques: any[] = [];
@@ -86,8 +80,8 @@ router.get('/top-musiques', authenticate, async (req, res) => {
     res.json({
       success: true,
       data: {
+        classement: topMusiques,
         periode: { startDate, endDate },
-        top: topMusiques,
       },
     });
   } catch (error: any) {
@@ -114,8 +108,8 @@ router.get('/top-artistes', authenticate, async (req, res) => {
     res.json({
       success: true,
       data: {
+        classement: topArtistes,
         periode: { startDate, endDate },
-        top: topArtistes,
       },
     });
   } catch (error: any) {
@@ -134,13 +128,12 @@ router.get('/evolution', authenticate, async (req, res) => {
   try {
     const startDate = req.query.startDate as string;
     const endDate = req.query.endDate as string;
-    const granularity = req.query.granularity as string || 'day';
+    const granularite = req.query.granularite as string || 'jour';
 
     // Mock: évolution
     const evolution = {
+      evolution: [],
       periode: { startDate, endDate },
-      granularity,
-      data: [],
     };
 
     res.json({

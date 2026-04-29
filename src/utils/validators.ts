@@ -117,6 +117,19 @@ export const registerDeviceSchema = z.object({
   pushToken: z.string().optional(),
 });
 
+export const createDeviceSchema = z.object({
+  nom: z.string().min(1).max(255),
+  type: z.enum(['mobile', 'tablette', 'desktop', 'autre']),
+  etablissementId: z.string().uuid().optional(),
+  metadata: z.record(z.any()).optional(),
+});
+
+export const updateDeviceSchema = z.object({
+  nom: z.string().min(1).max(255).optional(),
+  metadata: z.record(z.any()).optional(),
+  isActive: z.boolean().optional(),
+});
+
 // ==================== RAPPORTS ====================
 
 export const generateRapportSchema = z.object({

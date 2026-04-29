@@ -210,7 +210,7 @@ router.post('/refresh', validateRequest(refreshTokenSchema), async (req, res) =>
     const jwt = require('jsonwebtoken') as typeof import('jsonwebtoken');
     const config = require('../config').config;
 
-    const decoded = jwt.verify(refreshToken, config.jwt.secret);
+    const decoded = jwt.verify(refreshToken, config.jwt.secret) as any;
     
     // Vérifier si le token existe en base
     const storedToken = refreshTokens.get(decoded.userId);
@@ -442,10 +442,10 @@ router.get('/me', authenticate, async (req, res) => {
 });
 
 /**
- * POST /auth/changer-password
+ * PATCH /auth/changer-password
  * Changer le mot de passe
  */
-router.post('/changer-password', authenticate, validateRequest(changePasswordSchema), async (req, res) => {
+router.patch('/changer-password', authenticate, validateRequest(changePasswordSchema), async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
     
@@ -475,9 +475,12 @@ router.post('/changer-password', authenticate, validateRequest(changePasswordSch
     user.password = await bcrypt.hash(newPassword, 12);
     user.updatedAt = new Date();
 
+    // Révoquer tous les refresh tokens pour sécurité
+    refreshTokens.delete(user.id);
+
     res.json({
       success: true,
-      message: 'Mot de passe changé avec succès',
+      message: 'Mot de passe changé avec succès. Veuillez vous reconnecter.',
     });
   } catch (error: any) {
     res.status(500).json({

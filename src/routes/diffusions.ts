@@ -18,6 +18,8 @@ router.get('/', authenticate, async (req, res) => {
     const startDate = req.query.startDate as string;
     const endDate = req.query.endDate as string;
     const artiste = req.query.artiste as string;
+    const isrc = req.query.isrc as string;
+    const sourceApi = req.query.sourceApi as string;
 
     let filtered = [...diffusions];
 
@@ -25,8 +27,20 @@ router.get('/', authenticate, async (req, res) => {
     if (etablissementId) {
       filtered = filtered.filter(d => d.etablissementId === etablissementId);
     }
+    if (startDate) {
+      filtered = filtered.filter(d => new Date(d.timestampDiffusion) >= new Date(startDate));
+    }
+    if (endDate) {
+      filtered = filtered.filter(d => new Date(d.timestampDiffusion) <= new Date(endDate));
+    }
     if (artiste) {
       filtered = filtered.filter(d => d.artiste.toLowerCase().includes(artiste.toLowerCase()));
+    }
+    if (isrc) {
+      filtered = filtered.filter(d => d.isrc === isrc);
+    }
+    if (sourceApi) {
+      filtered = filtered.filter(d => d.sourceApi === sourceApi);
     }
 
     // Pagination
