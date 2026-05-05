@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: hmis-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: hmis_user
+      POSTGRES_PASSWORD: hmis_password
+      POSTGRES_DB: hmis_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db:/docker-entrypoint-initdb.d
+    networks:
+      - hmis-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hmis_user -d hmis_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis (for OTP and sessions)
+  redis:
+    image: redis:7-alpine
+    container_name: hmis-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - hmis-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  hmis-network:
+    driver: bridge
